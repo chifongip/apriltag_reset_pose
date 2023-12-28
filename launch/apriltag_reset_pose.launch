@@ -1,0 +1,7 @@
+<launch>
+
+  <node pkg="apriltag_reset_pose" name="update_robot_pose" type="update_robot_pose.py" output="screen">
+    <rosparam command="load" file="$(find apriltag_reset_pose)/config/tag_locations.yaml" />
+  </node>
+
+</launch>
