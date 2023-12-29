@@ -1,0 +1,5 @@
+<launch>
+    <node name="update_robot_pose" pkg="update_robot_pose" type="update_robot_pose" output="screen">
+        <rosparam command="load" file="$(find update_robot_pose)/config/tag_locations.yaml" />
+    </node>
+</launch>
