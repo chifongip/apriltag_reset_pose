@@ -11,6 +11,7 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <cmath>
 
 using namespace std;
 
@@ -77,8 +78,8 @@ public:
             tf_listener.lookupTransform("map", "base_link", ros::Time(0), map_base_link_actual_g);
             
             xy_actual = {map_base_link_actual_g.getOrigin().x(), map_base_link_actual_g.getOrigin().y()};   // actual xy position
-            map_base_link_actual_q = map_base_link_actual_g.getRotation();
-            tf::Matrix3x3(map_base_link_actual_q).getRPY(roll_actual, pitch_actual, yaw_actual);                              // actual yaw angle
+            // map_base_link_actual_q = map_base_link_actual_g.getRotation();
+            tf::Matrix3x3(map_base_link_actual_g.getRotation()).getRPY(roll_actual, pitch_actual, yaw_actual);                              // actual yaw angle
             
             if(!tag_detected.empty())
             {
@@ -105,11 +106,29 @@ public:
                 // calculation of base_link w.r.t. map
                 tag_usb_cam_link_g = usb_cam_link_tag_g.inverse();                  // usb_cam_link w.r.t. tag
                 usb_cam_link_base_link_g = base_link_usb_cam_link_g.inverse();      // base_link w.r.t. usb_cam_link
-
-                // -------------------------------------------continue-------------------------------------------
                 
-                // map_base_link_g = np.matmul(map_tag_g, np.matmul(tag_usb_cam_link_g, usb_cam_link_base_link_g))
+                map_base_link_g = map_tag_g * tag_usb_cam_link_g * usb_cam_link_base_link_g;
 
+                // get rotation and translation matrix from transformation matrix 
+                xy_detect = {map_base_link_g.getOrigin().x(), map_base_link_g.getOrigin().y()};
+                // map_base_link_q = map_base_link_g.getRotation();
+                tf::Matrix3x3(map_base_link_g.getRotation()).getRPY(roll_detect, pitch_detect, yaw_detect);
+
+                xy_diff = sqrt(pow((xy_actual[0] - xy_detect[0]), 2) +  pow((xy_actual[1] - xy_detect[1]), 2)); 
+                yaw_diff = abs(yaw_actual - yaw_detect);
+
+                // xy and yaw tolerance for updating the robot's pose
+                if(xy_diff > xy_tolerance || yaw_diff > yaw_tolerance)
+                {
+                    map_base_link_data.pose.pose.position.x = map_base_link_g.getOrigin().x();
+                    map_base_link_data.pose.pose.position.y = map_base_link_g.getOrigin().y();
+                    map_base_link_data.pose.pose.position.z = map_base_link_g.getOrigin().z();
+                    map_base_link_data.pose.pose.orientation.x = map_base_link_g.getRotation().x();
+                    map_base_link_data.pose.pose.orientation.y = map_base_link_g.getRotation().y();
+                    map_base_link_data.pose.pose.orientation.z = map_base_link_g.getRotation().z();
+                    map_base_link_data.pose.pose.orientation.w = map_base_link_g.getRotation().w();
+                    initialpose_pub.publish(map_base_link_data);
+                }
             }
         }
     }
@@ -128,10 +147,12 @@ private:
     tf::TransformListener tf_listener;
     tf::StampedTransform base_link_usb_cam_link_g;
     tf::StampedTransform map_base_link_actual_g;
-    tf::Quaternion map_base_link_actual_q;
+    // tf::Quaternion map_base_link_actual_q;
+    // tf::Quaternion map_base_link_q;
 
-    std::vector<double> xy_actual; 
-    double roll_actual, pitch_actual, yaw_actual;
+    std::vector<double> xy_actual, xy_detect; 
+    double roll_actual, pitch_actual, yaw_actual, roll_detect, pitch_detect, yaw_detect;
+    double xy_diff, yaw_diff;
 
     tf::Transform usb_cam_link_tag_g;
     tf::Transform map_tag_g;
