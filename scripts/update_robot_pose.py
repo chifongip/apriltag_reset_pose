@@ -10,8 +10,8 @@ from nav_msgs.msg import Odometry
 
 def odomCallback(data):
     global curr_linear_vel_x, curr_angular_vel_z
-    curr_linear_vel_x = data.twist.twist.linear.x
-    curr_angular_vel_z = data.twist.twist.angular.z
+    curr_linear_vel_x = abs(data.twist.twist.linear.x)
+    curr_angular_vel_z = abs(data.twist.twist.angular.z)
 
 
 def poseCallback(data): 
