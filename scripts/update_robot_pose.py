@@ -20,8 +20,8 @@ def poseCallback(data):
         map_base_link_pub = rospy.Publisher('initialpose', PoseWithCovarianceStamped, queue_size=10)
 
         map_base_link_data = PoseWithCovarianceStamped()
-        map_base_link_data.header.seq = data.header.seq
-        map_base_link_data.header.stamp = data.header.stamp
+        # map_base_link_data.header.seq = data.header.seq
+        map_base_link_data.header.stamp = rospy.Time.now()
         map_base_link_data.header.frame_id = "map"
 
         # tag w.r.t. map
