@@ -10,5 +10,5 @@ tag_locations:
 max_detection_dist: 2.0
 max_linear_vel_x: 0.5     # max: 1.0
 max_angular_vel_z: 0.5      # max: 2.0
-xy_tolerance: 0.15
-yaw_tolerance: 0.25
+xy_tolerance: 0.3
+yaw_tolerance: 0.5
