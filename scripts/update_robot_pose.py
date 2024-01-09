@@ -55,7 +55,7 @@ class posePublisher:
             self.tf_listener.waitForTransform("map", "base_link", rospy.Time(0), rospy.Duration(1.0))
             (map_base_link_actual_t, map_base_link_actual_q) = self.tf_listener.lookupTransform("map", "base_link", rospy.Time(0))
             xy_actual = np.array([abs(map_base_link_actual_t[0]), abs(map_base_link_actual_t[1])])            # actual xy position
-            (_, _, yaw_actual) = abs(tf.transformations.euler_from_quaternion(map_base_link_actual_q))   # actual yaw angle
+            (_, _, yaw_actual) = tf.transformations.euler_from_quaternion(map_base_link_actual_q)   # actual yaw angle
     
             if tag_detected:
                 tag_sorted = sorted(tag_detected, key=lambda tag_detected: tag_detected.pose.pose.pose.position.z)
@@ -88,10 +88,10 @@ class posePublisher:
                 map_base_link_q = tf.transformations.quaternion_from_matrix(map_base_link_g)
 
                 xy_detect = np.array([abs(map_base_link_t[0]), abs(map_base_link_t[1])])
-                (_, _, yaw_detect) = abs(tf.transformations.euler_from_quaternion(map_base_link_q))
+                (_, _, yaw_detect) = tf.transformations.euler_from_quaternion(map_base_link_q)
 
                 xy_diff = np.linalg.norm(xy_actual - xy_detect)
-                yaw_diff = abs(yaw_actual - yaw_detect)
+                yaw_diff = abs(abs(yaw_actual) - abs(yaw_detect))
 
                 # xy and yaw tolerance for updating the robot's pose
                 if xy_diff > self.xy_tolerance or yaw_diff > self.yaw_tolerance:
